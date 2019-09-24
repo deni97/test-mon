@@ -7,7 +7,7 @@ $products_file = './data/products.csv';
 
 $groups = parse_csv($groups_file);
 $group_tree = construct_group_tree($groups);
-
+// Предполагается, что массив продуктов помещается в памяти
 $products = parse_csv($products_file);
 
 foreach ($products as $product) {

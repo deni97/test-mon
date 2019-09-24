@@ -92,9 +92,30 @@ function replace_placeholder(string $input, array $replacements): string
     return $output;
 }
 
-function get_product_row(string $filename): array
+function add_product(array &$tree, array $product): void
 {
-    $product = [];
+    // find corresponding group
+    // get format string
+    // if it is not present - go up the tree to find it
+    // format string and add it to corresponding group's products
 
-    return $product;
+    function add_product_to_parent(array &$parent, $key, array $node): void
+    {
+        if ($parent['id'] === $node['parent']) {
+            $parent['products'][] = $node;
+        }
+
+        if (!empty($parent['children'])) {
+            array_walk($parent['products'], 'add_product_to_parent', $node);
+        }
+    }
+
+    function add_node(array $node, array &$tree): void
+    {
+        if ($node['parent'] === '') {
+            $tree[] = $node;
+        }
+        
+        array_walk($tree, 'add_to_parent', $node);
+    }
 }
