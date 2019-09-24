@@ -40,14 +40,9 @@ class UtilsTest extends Testcase
         ];
     }
 
-    public function product_provider()
-    {
-        return [];
-    }
-
     public function test_parse_csv()
     {
-        $groups = parse_csv('./data/groups.csv');
+        $groups = parse_csv('./tests/data/groups.csv');
 
         $expected_groups = $this->group_provider();
 
@@ -124,6 +119,118 @@ class UtilsTest extends Testcase
         $this->assertEquals(
             $expected_string,
             $output
+        );
+    }
+
+    function test_add_product()
+    {
+        $tree = [
+            [
+                'id' => 1,
+                'name' => 'Группа 1',
+                'parent' => '',
+                'description_format' => 'Купите %наименование% по цене %цена%',
+                'inheritable' => true,
+                'products' => [],
+                'children' => [
+                    [
+                        'id' => 2,
+                        'name' => 'Группа 1.1',
+                        'parent' => 1,
+                        'description_format' => '',
+                        'inheritable' => false,
+                        'products' => [],
+                        'children' => []
+                    ],
+                    [
+                        'id' => 3,
+                        'name' => 'Группа 1.2',
+                        'parent' => 1,
+                        'description_format' => 'Покупайте больше %name%',
+                        'inheritable' => true,
+                        'products' => [],
+                        'children' => [
+                            [
+                                'id' => 4,
+                                'name' => 'Группа 1.2.1',
+                                'parent' => 3,
+                                'description_format' => '',
+                                'inheritable' => false,
+                                'products' => [],
+                                'children' => []
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $product = [
+            'id' => 1,
+            'категория' => 1,
+            'наименование' => 'супрадин',
+            'цена' => 100
+        ];
+
+        add_product($product, $tree);
+
+        $product = [
+            'id' => 4,
+            'категория' => 4,
+            'наименование' => 'анальгин',
+            'цена' => 20
+        ];
+
+        add_product($product, $tree);
+
+        $expected_tree = [
+            [
+                'id' => 1,
+                'name' => 'Группа 1',
+                'parent' => '',
+                'description_format' => 'Купите %наименование% по цене %цена%',
+                'inheritable' => true,
+                'products' => [
+                    'Купите супрадин по цене 100'
+                ],
+                'children' => [
+                    [
+                        'id' => 2,
+                        'name' => 'Группа 1.1',
+                        'parent' => 1,
+                        'description_format' => '',
+                        'inheritable' => false,
+                        'products' => [],
+                        'children' => []
+                    ],
+                    [
+                        'id' => 3,
+                        'name' => 'Группа 1.2',
+                        'parent' => 1,
+                        'description_format' => 'Покупайте больше %name%',
+                        'inheritable' => true,
+                        'products' => [],
+                        'children' => [
+                            [
+                                'id' => 4,
+                                'name' => 'Группа 1.2.1',
+                                'parent' => 3,
+                                'description_format' => '',
+                                'inheritable' => false,
+                                'products' => [
+                                    'Покупайте больше анальгин'
+                                ],
+                                'children' => []
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals(
+            $expected_tree,
+            $tree
         );
     }
 }

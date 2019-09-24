@@ -1,16 +1,25 @@
 <?php
 
+function semicolon_str_getcsv(string $input): array
+{
+    return str_getcsv($input, ";");
+}
+
 function parse_csv(string $filename): array
 {
-    function semicolon_str_getcsv(string $input): array
-    {
-        return str_getcsv($input, ";");
-    }
-
     $rows   = array_map('semicolon_str_getcsv', file($filename));
     $header = array_shift($rows);
     $csv    = array();
+
     foreach($rows as $row) {
+        // В products.csv в заголовке на одну ; больше, чем в записях
+        if (count($header) !== count($row)) {
+            $min = min(count($header), count($row));
+
+            $header = array_slice($header, 0, $min);
+            $row = array_slice($row, 0, $min);
+        }
+
         $csv[] = array_combine($header, $row);
     }
 
@@ -81,4 +90,11 @@ function replace_placeholder(string $input, array $replacements): string
     }
 
     return $output;
+}
+
+function get_product_row(string $filename): array
+{
+    $product = [];
+
+    return $product;
 }
