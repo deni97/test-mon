@@ -534,22 +534,4 @@ class UtilsTest extends Testcase
             ]
         ];
     }
-
-    public function test_html_from()
-    {
-        $tree = $this->tree_provider();
-
-        foreach ($this->product_provider() as $product) {
-            add_product($tree, $product);
-        }
-
-        $expected_html = '';
-
-        $html = html_from($tree);
-
-        $this->assertEquals(
-            $expected_html,
-            $html
-        );
-    }
 }

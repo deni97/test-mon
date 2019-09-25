@@ -191,3 +191,89 @@ function add_product(array &$tree, array $product): void
 
     add_to_parent($tree, [$product, 'children', 'products', 'категория', 'formatted_text']);
 }
+
+function get_tabs(int $count): string
+{
+    $tabs = '';
+
+    for ($i = 0; $i < $count; ++$i) {
+        $tabs .= '	';
+    }
+
+    return $tabs;
+}
+
+$newline = '
+';
+
+function html_from_group(array &$parent, int $count): string
+{
+    $tab_count = $count * 2;
+
+    $html = '';
+
+    $html .= get_tabs($tab_count);
+    $html .= "<h$count>";
+    $html .= $parent['name'];
+    $html .= "</h$count>";
+    $html .= '
+';
+    
+    $html .= get_tabs($tab_count);
+    $html .= '<ul>';
+    $html .= '
+';
+    foreach ($parent['products'] as $product) {
+        $html .= get_tabs($tab_count + 1);
+        $html .= '<li><b>';
+        $html .= $product;
+        $html .= '</b></li>';
+        $html .= '
+';
+    }
+
+    foreach ($parent['children'] as $child) {
+        $html .= get_tabs($tab_count + 1);
+        $html .= '<li>';
+        $html .= '
+';
+        $html .= html_from_group($child, $count + 1);
+        $html .= get_tabs($tab_count + 1);
+        $html .= '</li>';
+        $html .= '
+';
+    }
+
+    $html .= get_tabs($tab_count);
+    $html .= '</ul>';
+    $html .= '
+';
+
+    
+    return $html;
+}
+
+function html_from(array &$tree): string
+{
+    $html = '<ul>';
+    $html .= '
+';  
+    $html .= get_tabs(1);
+    $html .= '<li>';
+    $html .= '
+';  
+
+    foreach ($tree as $group) {
+        $html .= html_from_group($group, 1);
+    }
+
+    $html .= '
+';
+    $html .= get_tabs(1);
+    $html .= '</li>';
+    $html .= '
+';
+    $html .= '</ul>';
+
+    return $html;
+}

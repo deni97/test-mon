@@ -14,6 +14,4 @@ foreach ($products as $product) {
     add_product($group_tree, $product);
 }
 
-var_dump($group_tree);
-
 echo html_from($group_tree);
