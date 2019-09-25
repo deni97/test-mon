@@ -11,7 +11,9 @@ $group_tree = construct_group_tree($groups);
 $products = parse_csv($products_file);
 
 foreach ($products as $product) {
-    add_product($product, $group_tree);
+    add_product($group_tree, $product);
 }
+
+var_dump($group_tree);
 
 echo html_from($group_tree);

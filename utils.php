@@ -11,7 +11,7 @@ function parse_csv(string $filename): array
     $header = array_shift($rows);
     $csv    = array();
 
-    foreach($rows as $row) {
+    foreach ($rows as $row) {
         // В products.csv в заголовке на одну ; больше, чем в записях
         if (count($header) !== count($row)) {
             $min = min(count($header), count($row));
@@ -26,6 +26,54 @@ function parse_csv(string $filename): array
     return $csv;
 }
 
+function add_to_parent(&$parent, $key, array $params): void
+{
+    if (is_string($parent)) {
+        return;
+    }
+
+    $node = $params[0];
+    $branch = $params[1];
+    $adding_to = $params[2];
+    $checking = $params[3];
+
+    if (!empty($parent[$branch]) && is_array($parent[$branch])) {
+        array_walk($parent[$branch], 'add_to_parent', $params);
+    }
+
+    if (
+        array_key_exists('id', $parent) && ($parent['id'] === $node[$checking])
+    ) {
+        if (!isset($params[4])) {
+            $parent[$adding_to][] = $node;
+        } else {
+            $parent[$adding_to][] = $node[$params[4]];
+        }
+    }
+}
+
+function node_from_group(array $group): array
+{
+    return [
+        'id' => $group['id'],
+        'name' => $group['наименование'],
+        'parent' => $group['родитель'],
+        'description_format' => $group['формат описания товаров'],
+        'inheritable' => (bool) $group['наследовать дочерним'],
+        'products' => [],
+        'children' => []
+    ];
+}
+
+function add_node(array &$tree, array $node): void
+{
+    if ($node['parent'] === '') {
+        $tree[] = $node;
+    }
+
+    array_walk($tree, 'add_to_parent', [$node, 'children', 'children', 'parent']);
+}
+
 /**
  * В условии ясно не указан порядок групп в .csv. 
  * Предполагаю их упорядоченность.  
@@ -33,46 +81,31 @@ function parse_csv(string $filename): array
  */
 function construct_group_tree(array $groups): array
 {
-    function node_from_group(array $group): array
-    {
-        return [
-            'id' => $group['id'],
-            'name' => $group['наименование'],
-            'parent' => $group['родитель'],
-            'description_format' => $group['формат описания товаров'],
-            'inheritable' => (bool) $group['наследовать дочерним'],
-            'products' => [],
-            'children' => []
-        ];
-    }
-
-    function add_to_parent(array &$parent, $key, array $node): void
-    {
-        if ($parent['id'] === $node['parent']) {
-            $parent['children'][] = $node;
-        }
-
-        if (!empty($parent['children'])) {
-            array_walk($parent['children'], 'add_to_parent', $node);
-        }
-    }
-
-    function add_node(array $node, array &$tree): void
-    {
-        if ($node['parent'] === '') {
-            $tree[] = $node;
-        }
-        
-        array_walk($tree, 'add_to_parent', $node);
-    }
-
     $tree = [];
 
     foreach ($groups as $group) {
-        add_node(node_from_group($group), $tree);
+        add_node($tree, node_from_group($group));
     }
 
     return $tree;
+}
+
+function find_parent(&$tree, $id)
+{
+    $output = [];
+
+    foreach ($tree as $parent) {
+        if ($parent['id'] === $id) {
+            return $parent;
+        } else if (!array_key_exists('children', $parent)) {
+            return null;
+        } else {
+            $output = find_parent($parent['children'], $id);
+            if ($output) {
+                return $output;
+            }
+        }
+    }
 }
 
 function replace_placeholder(string $input, array $replacements): string
@@ -84,7 +117,7 @@ function replace_placeholder(string $input, array $replacements): string
     $match = [];
 
     while (preg_match($regex, $output, $match)) {
-        if  (array_key_exists($match[1], $replacements)) {
+        if (array_key_exists($match[1], $replacements)) {
             $output = preg_replace($regex, $replacements[$match[1]], $output, 1);
         }
     }
@@ -92,30 +125,49 @@ function replace_placeholder(string $input, array $replacements): string
     return $output;
 }
 
+function inherit_format_helper(array &$tree, array $parent)
+{
+    if (
+        ($parent['description_format'] !== '') && $parent['inheritable']
+    ) {
+        return $parent['description_format'];
+    } else {
+        $grandparent = find_parent($tree, $parent['parent']);
+        if ($grandparent !== []) {
+            $output = inherit_format_helper($tree, $grandparent);
+
+            if ($output) {
+                return $output;
+            }
+        }
+    }
+}
+
+function inherit_format(array &$tree, array $product): string
+{
+    $parent = find_parent($tree, $product['категория']);
+    $output = '';
+
+    $output = inherit_format_helper($tree, $parent);
+    return $output;
+}
+
+function get_format(array &$tree, array $parent, array $product): string
+{
+    if ($parent['description_format'] !== '') {
+        return $parent['description_format'];
+    }
+
+    return inherit_format($tree, $product);
+}
+
 function add_product(array &$tree, array $product): void
 {
-    // find corresponding group
-    // get format string
-    // if it is not present - go up the tree to find it
-    // format string and add it to corresponding group's products
+    $parent = find_parent($tree, $product['категория']);
 
-    function add_product_to_parent(array &$parent, $key, array $node): void
-    {
-        if ($parent['id'] === $node['parent']) {
-            $parent['products'][] = $node;
-        }
+    $format = get_format($tree, $parent, $product);
 
-        if (!empty($parent['children'])) {
-            array_walk($parent['products'], 'add_product_to_parent', $node);
-        }
-    }
+    $product['formatted_text'] = replace_placeholder($format, $product);
 
-    function add_node(array $node, array &$tree): void
-    {
-        if ($node['parent'] === '') {
-            $tree[] = $node;
-        }
-        
-        array_walk($tree, 'add_to_parent', $node);
-    }
+    array_walk($tree, 'add_to_parent', [$product, 'children', 'products', 'категория', 'formatted_text']);
 }

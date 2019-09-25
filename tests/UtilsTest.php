@@ -10,32 +10,106 @@ class UtilsTest extends Testcase
     {
         return [
             [
-                'id' => 1, 
+                'id' => 1,
                 'наименование' => 'Группа 1',
                 'родитель' => '',
                 'формат описания товаров' => 'Купите %наименование% по цене %цена%',
                 'наследовать дочерним' => 1
-            ], 
+            ],
             [
-                'id' => 2, 
+                'id' => 2,
                 'наименование' => 'Группа 1.1',
                 'родитель' => 1,
                 'формат описания товаров' => '',
                 'наследовать дочерним' => 0
             ],
             [
-                'id' => 3, 
+                'id' => 3,
                 'наименование' => 'Группа 1.2',
                 'родитель' => 1,
                 'формат описания товаров' => 'Покупайте больше %name%',
                 'наследовать дочерним' => 1
-            ], 
+            ],
             [
-                'id' => 4, 
+                'id' => 4,
                 'наименование' => 'Группа 1.2.1',
                 'родитель' => 3,
                 'формат описания товаров' => '',
                 'наследовать дочерним' => 0
+            ]
+        ];
+    }
+
+    public function tree_provider()
+    {
+        return [
+            [
+                'id' => 1,
+                'name' => 'Группа 1',
+                'parent' => '',
+                'description_format' => 'Купите %наименование% по цене %цена%',
+                'inheritable' => true,
+                'products' => [],
+                'children' => [
+                    [
+                        'id' => 2,
+                        'name' => 'Группа 1.1',
+                        'parent' => 1,
+                        'description_format' => '',
+                        'inheritable' => false,
+                        'products' => [],
+                        'children' => []
+                    ],
+                    [
+                        'id' => 3,
+                        'name' => 'Группа 1.2',
+                        'parent' => 1,
+                        'description_format' => 'Покупайте больше %name%',
+                        'inheritable' => true,
+                        'products' => [],
+                        'children' => [
+                            [
+                                'id' => 4,
+                                'name' => 'Группа 1.2.1',
+                                'parent' => 3,
+                                'description_format' => '',
+                                'inheritable' => false,
+                                'products' => [],
+                                'children' => []
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    public function product_provider()
+    {
+        return [
+            [
+                'id' => 1,
+                'категория' => 1,
+                'наименование' => 'супрадин',
+                'цена' => 100
+            ],
+            [
+                'id' => 2,
+                'категория' => 2,
+                'наименование' => 'аспирин',
+                'цена' => 200
+            ],
+            [
+                'id' => 3,
+                'категория' => 3,
+                'наименование' => 'йод',
+                'цена' => 15
+            ],
+            [
+                'id' => 4,
+                'категория' => 4,
+                'наименование' => 'анальгин',
+                'цена' => 20
             ]
         ];
     }
@@ -54,48 +128,10 @@ class UtilsTest extends Testcase
 
     public function test_construct_group_tree()
     {
-        $tree = construct_group_tree($this->group_provider());
+        $groups = $this->group_provider();
+        $tree = construct_group_tree($groups);
 
-        $expected_tree = [
-            [
-                'id' => 1,
-                'name' => 'Группа 1',
-                'parent' => '',
-                'description_format' => 'Купите %наименование% по цене %цена%',
-                'inheritable' => true,
-                'products' => [],
-                'children' => [
-                    [
-                        'id' => 2,
-                        'name' => 'Группа 1.1',
-                        'parent' => 1,
-                        'description_format' => '',
-                        'inheritable' => false,
-                        'products' => [],
-                        'children' => []
-                    ],
-                    [
-                        'id' => 3,
-                        'name' => 'Группа 1.2',
-                        'parent' => 1,
-                        'description_format' => 'Покупайте больше %name%',
-                        'inheritable' => true,
-                        'products' => [],
-                        'children' => [
-                            [
-                                'id' => 4,
-                                'name' => 'Группа 1.2.1',
-                                'parent' => 3,
-                                'description_format' => '',
-                                'inheritable' => false,
-                                'products' => [],
-                                'children' => []
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $expected_tree = $this->tree_provider();
 
         $this->assertEquals(
             $expected_tree,
@@ -108,7 +144,7 @@ class UtilsTest extends Testcase
         $expected_string = 'Купите тавегил по цене 1234';
 
         $output = replace_placeholder(
-            'Купите %наименование% по цене %цена%', 
+            'Купите %наименование% по цене %цена%',
             [
                 'наименование' => 'тавегил',
                 'цена' => '1234',
@@ -122,66 +158,85 @@ class UtilsTest extends Testcase
         );
     }
 
-    function test_add_product()
+    public function test_inherit_format()
     {
-        $tree = [
-            [
-                'id' => 1,
-                'name' => 'Группа 1',
-                'parent' => '',
-                'description_format' => 'Купите %наименование% по цене %цена%',
-                'inheritable' => true,
-                'products' => [],
-                'children' => [
-                    [
-                        'id' => 2,
-                        'name' => 'Группа 1.1',
-                        'parent' => 1,
-                        'description_format' => '',
-                        'inheritable' => false,
-                        'products' => [],
-                        'children' => []
-                    ],
-                    [
-                        'id' => 3,
-                        'name' => 'Группа 1.2',
-                        'parent' => 1,
-                        'description_format' => 'Покупайте больше %name%',
-                        'inheritable' => true,
-                        'products' => [],
-                        'children' => [
-                            [
-                                'id' => 4,
-                                'name' => 'Группа 1.2.1',
-                                'parent' => 3,
-                                'description_format' => '',
-                                'inheritable' => false,
-                                'products' => [],
-                                'children' => []
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $tree = $this->tree_provider();
 
-        $product = [
-            'id' => 1,
-            'категория' => 1,
-            'наименование' => 'супрадин',
-            'цена' => 100
-        ];
+        $product = $this->product_provider()[0];
 
-        add_product($product, $tree);
+        $expected_string = 'Купите %наименование% по цене %цена%';
 
-        $product = [
+        $output = inherit_format($tree, $product);
+
+        $this->assertEquals(
+            $expected_string,
+            $output
+        );
+
+        $product = $this->product_provider()[3];
+
+        $expected_string = 'Покупайте больше %name%';
+
+        $output = inherit_format($tree, $product);
+
+        $this->assertEquals(
+            $expected_string,
+            $output
+        );
+    }
+
+    public function test_find_parent()
+    {
+        $tree = $this->tree_provider();
+
+        $expected_parent = $tree[0];
+
+        $parent = find_parent($tree, 1);
+
+        $this->assertEquals(
+            $expected_parent,
+            $parent
+        );
+
+        $expected_parent = $tree[0]['children'][0];
+
+        $parent = find_parent($tree, 2);
+
+        $this->assertEquals(
+            $expected_parent,
+            $parent
+        );
+
+        $expected_parent = [
             'id' => 4,
-            'категория' => 4,
-            'наименование' => 'анальгин',
-            'цена' => 20
+            'name' => 'Группа 1.2.1',
+            'parent' => 3,
+            'description_format' => '',
+            'inheritable' => false,
+            'products' => [],
+            'children' => []
         ];
 
-        add_product($product, $tree);
+        $parent = find_parent($tree, 4);
+
+        $this->assertEquals(
+            $expected_parent,
+            $parent
+        );
+    }
+
+    /*
+    public function test_add_product()
+    {
+        $tree = $this->tree_provider();
+
+        $product = $this->product_provider()[0];
+
+        add_product($tree, $product);
+
+        $product = $this->product_provider()[3];
+
+        add_product($tree, $product);
 
         $expected_tree = [
             [
@@ -232,5 +287,255 @@ class UtilsTest extends Testcase
             $expected_tree,
             $tree
         );
+    }
+    */
+
+    /**
+     * @dataProvider add_to_parent_provider
+     * @param array $params
+     * @param array $expected_tree
+     */
+    public function test_add_to_parent(array $params, array $expected_tree)
+    {
+        $tree = $this->tree_provider();
+
+        add_to_parent($tree, null, $params);
+        
+        $this->assertEquals(
+            $expected_tree,
+            $tree
+        );
+    }
+
+    public function add_to_parent_provider()
+    {
+        $product1 = $this->product_provider()[0];
+        $product1['formatted_text'] = 'Купите супрадин по цене 100';
+
+        $product4 = $this->product_provider()[3];
+        $product4['formatted_text'] = 'Покупайте больше анальгин';
+
+        return [
+            'group 5' => [
+                'params' => [
+                    [
+                        'id' => 5,
+                        'наименование' => 'Группа 1.2.1.1',
+                        'родитель' => 4,
+                        'формат описания товаров' => '1234',
+                        'наследовать дочерним' => 1
+                    ], 
+                    'children', 'children', 'parent'
+                ],
+                'expected_tree' => [
+                    [
+                        'id' => 1,
+                        'name' => 'Группа 1',
+                        'parent' => '',
+                        'description_format' => 'Купите %наименование% по цене %цена%',
+                        'inheritable' => true,
+                        'products' => [],
+                        'children' => [
+                            [
+                                'id' => 2,
+                                'name' => 'Группа 1.1',
+                                'parent' => 1,
+                                'description_format' => '',
+                                'inheritable' => false,
+                                'products' => [],
+                                'children' => []
+                            ],
+                            [
+                                'id' => 3,
+                                'name' => 'Группа 1.2',
+                                'parent' => 1,
+                                'description_format' => 'Покупайте больше %name%',
+                                'inheritable' => true,
+                                'products' => [],
+                                'children' => [
+                                    [
+                                        'id' => 4,
+                                        'name' => 'Группа 1.2.1',
+                                        'parent' => 3,
+                                        'description_format' => '',
+                                        'inheritable' => false,
+                                        'products' => [],
+                                        'children' => [
+                                            [
+                                                'id' => 5,
+                                                'name' => 'Группа 1.2.1.1',
+                                                'parent' => 4,
+                                                'description_format' => '1234',
+                                                'inheritable' => true,
+                                                'products' => [],
+                                                'children' => []
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'group 6' => [
+                'params' => [
+                    [
+                        'id' => 6,
+                        'наименование' => 'Группа 2',
+                        'родитель' => '',
+                        'формат описания товаров' => '',
+                        'наследовать дочерним' => 0
+                    ], 
+                    'children', 'children', 'parent'
+                ],
+                'expected_tree' => 
+                [
+                    [
+                        'id' => 1,
+                        'name' => 'Группа 1',
+                        'parent' => '',
+                        'description_format' => 'Купите %наименование% по цене %цена%',
+                        'inheritable' => true,
+                        'products' => [],
+                        'children' => [
+                            [
+                                'id' => 2,
+                                'name' => 'Группа 1.1',
+                                'parent' => 1,
+                                'description_format' => '',
+                                'inheritable' => false,
+                                'products' => [],
+                                'children' => []
+                            ],
+                            [
+                                'id' => 3,
+                                'name' => 'Группа 1.2',
+                                'parent' => 1,
+                                'description_format' => 'Покупайте больше %name%',
+                                'inheritable' => true,
+                                'products' => [],
+                                'children' => [
+                                    [
+                                        'id' => 4,
+                                        'name' => 'Группа 1.2.1',
+                                        'parent' => 3,
+                                        'description_format' => '',
+                                        'inheritable' => false,
+                                        'products' => [],
+                                        'children' => []
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'id' => 6,
+                        'name' => 'Группа 2',
+                        'parent' => '',
+                        'description_format' => '',
+                        'inheritable' => false,
+                        'products' => [],
+                        'children' => []
+                    ],
+                ]
+            ],
+            'product 1' => [
+                'params' => [
+                    $product1,
+                    'children', 'products', 'категория', 'formatted_text'
+                ],
+                'expected_tree' => [
+                    [
+                        'id' => 1,
+                        'name' => 'Группа 1',
+                        'parent' => '',
+                        'description_format' => 'Купите %наименование% по цене %цена%',
+                        'inheritable' => true,
+                        'products' => [
+                            'Купите супрадин по цене 100'
+                        ],
+                        'children' => [
+                            [
+                                'id' => 2,
+                                'name' => 'Группа 1.1',
+                                'parent' => 1,
+                                'description_format' => '',
+                                'inheritable' => false,
+                                'products' => [],
+                                'children' => []
+                            ],
+                            [
+                                'id' => 3,
+                                'name' => 'Группа 1.2',
+                                'parent' => 1,
+                                'description_format' => 'Покупайте больше %name%',
+                                'inheritable' => true,
+                                'products' => [],
+                                'children' => [
+                                    [
+                                        'id' => 4,
+                                        'name' => 'Группа 1.2.1',
+                                        'parent' => 3,
+                                        'description_format' => '',
+                                        'inheritable' => false,
+                                        'products' => [],
+                                        'children' => []
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'product 4' => [
+                'params' => [
+                    $product4, 
+                    'children', 'products', 'категория', 'formatted_text'
+                ],
+                'expected_tree' => [
+                    [
+                        'id' => 1,
+                        'name' => 'Группа 1',
+                        'parent' => '',
+                        'description_format' => 'Купите %наименование% по цене %цена%',
+                        'inheritable' => true,
+                        'products' => [],
+                        'children' => [
+                            [
+                                'id' => 2,
+                                'name' => 'Группа 1.1',
+                                'parent' => 1,
+                                'description_format' => '',
+                                'inheritable' => false,
+                                'products' => [],
+                                'children' => []
+                            ],
+                            [
+                                'id' => 3,
+                                'name' => 'Группа 1.2',
+                                'parent' => 1,
+                                'description_format' => 'Покупайте больше %name%',
+                                'inheritable' => true,
+                                'products' => [],
+                                'children' => [
+                                    [
+                                        'id' => 4,
+                                        'name' => 'Группа 1.2.1',
+                                        'parent' => 3,
+                                        'description_format' => '',
+                                        'inheritable' => false,
+                                        'products' => [
+                                            'Покупайте больше анальгин'
+                                        ],
+                                        'children' => []
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
     }
 }
