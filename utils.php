@@ -26,9 +26,19 @@ function parse_csv(string $filename): array
     return $csv;
 }
 
-function add_to_parent(&$parent, $key, array $params): void
+function is_sequential_array($arr) {
+	foreach(array_keys($arr) as $key)
+		if (is_int($key)) return true;
+	return false;
+}
+
+function add_to_parent(&$parent, array $params): void
 {
-    if (is_string($parent)) {
+    if (!empty($parent) && is_sequential_array($parent)) {
+        for ($i = 0; $i < count($parent); ++$i) {
+            add_to_parent($parent[$i], $params);
+        }
+
         return;
     }
 
@@ -37,10 +47,6 @@ function add_to_parent(&$parent, $key, array $params): void
     $adding_to = $params[2];
     $checking = $params[3];
 
-    if (!empty($parent[$branch]) && is_array($parent[$branch])) {
-        array_walk($parent[$branch], 'add_to_parent', $params);
-    }
-
     if (
         array_key_exists('id', $parent) && ($parent['id'] === $node[$checking])
     ) {
@@ -48,6 +54,14 @@ function add_to_parent(&$parent, $key, array $params): void
             $parent[$adding_to][] = $node;
         } else {
             $parent[$adding_to][] = $node[$params[4]];
+        }
+
+        return;
+    }
+
+    if (!empty($parent[$branch]) && is_array($parent[$branch])) {
+        for ($i = 0; $i < count($parent[$branch]); ++$i) {
+            add_to_parent($parent[$branch][$i], $params);
         }
     }
 }
@@ -71,7 +85,7 @@ function add_node(array &$tree, array $node): void
         $tree[] = $node;
     }
 
-    array_walk($tree, 'add_to_parent', [$node, 'children', 'children', 'parent']);
+    add_to_parent($tree, [$node, 'children', 'children', 'parent']);
 }
 
 /**
@@ -119,6 +133,8 @@ function replace_placeholder(string $input, array $replacements): string
     while (preg_match($regex, $output, $match)) {
         if (array_key_exists($match[1], $replacements)) {
             $output = preg_replace($regex, $replacements[$match[1]], $output, 1);
+        } else {
+            $output = preg_replace($regex, 'UNDEFINED', $output, 1);
         }
     }
 
@@ -152,13 +168,13 @@ function inherit_format(array &$tree, array $product): string
     return $output;
 }
 
-function get_format(array &$tree, array $parent, array $product): string
+function get_format(array &$tree, array $parent, array $product)
 {
     if ($parent['description_format'] !== '') {
         return $parent['description_format'];
     }
 
-    return inherit_format($tree, $product);
+    return null;
 }
 
 function add_product(array &$tree, array $product): void
@@ -166,8 +182,12 @@ function add_product(array &$tree, array $product): void
     $parent = find_parent($tree, $product['категория']);
 
     $format = get_format($tree, $parent, $product);
+    
+    if (!$format) {
+        $format = inherit_format($tree, $product);
+    }
 
     $product['formatted_text'] = replace_placeholder($format, $product);
 
-    array_walk($tree, 'add_to_parent', [$product, 'children', 'products', 'категория', 'formatted_text']);
+    add_to_parent($tree, [$product, 'children', 'products', 'категория', 'formatted_text']);
 }
