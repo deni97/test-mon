@@ -228,7 +228,7 @@ class UtilsTest extends Testcase
             $parent
         );
     }
-    
+
     public function test_add_product()
     {
         $tree = $this->tree_provider();
@@ -300,7 +300,7 @@ class UtilsTest extends Testcase
     public function test_add_to_parent(array $params, array $expected_tree)
     {
         $tree = $this->tree_provider();
-        
+
         add_to_parent($tree, $params);
 
         $this->assertEquals(
@@ -548,7 +548,7 @@ class UtilsTest extends Testcase
         $associative_array = [
             'asdf' => 1234,
             '1234' => 'asdf',
-            'zxcv' => [1,2,3,4]
+            'zxcv' => [1, 2, 3, 4]
         ];
 
         $sequential_result = is_sequential_array($sequential_array);
@@ -558,5 +558,27 @@ class UtilsTest extends Testcase
         $associative_result = is_sequential_array($associative_array);
 
         $this->assertFalse($associative_result);
+    }
+
+    public function test_node_from_group()
+    {
+        $group = $this->group_provider()[0];
+
+        $node = node_from_group($group);
+
+        $expected_node = [
+            'id' => 1,
+            'name' => 'Группа 1',
+            'parent' => '',
+            'description_format' => 'Купите %наименование% по цене %цена%',
+            'inheritable' => true,
+            'products' => [],
+            'children' => []
+        ];
+
+        $this->assertEquals(
+            $expected_node,
+            $node
+        );
     }
 }
