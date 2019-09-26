@@ -166,22 +166,13 @@ function inherit_format(array &$tree, array $parent)
     }
 }
 
-function get_format(array &$tree, array $parent, array $product)
-{
-    if ($parent['description_format'] !== '') {
-        return $parent['description_format'];
-    }
-
-    return null;
-}
-
 function add_product(array &$tree, array $product): void
 {
     $parent = find_parent($tree, $product['категория']);
 
-    $format = get_format($tree, $parent, $product);
-
-    if (!$format) {
+    if ($parent['description_format'] !== '') {
+        $format = $parent['description_format'];
+    } else {
         $format = inherit_format($tree, $parent);
     }
 
