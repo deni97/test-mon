@@ -581,4 +581,31 @@ class UtilsTest extends Testcase
             $node
         );
     }
+
+    public function test_html_from_group()
+    {
+        $group = $this->tree_provider()[0]['children'][1];
+        $product = $this->product_provider()[3];
+        $group['children'][0]['products'][] = replace_placeholder($group['description_format'], $product);
+
+        $expected_html = <<<HTML
+\t\t<h1>Группа 1.2</h1>
+\t\t<ul>
+\t\t\t<li>
+\t\t\t\t<h2>Группа 1.2.1</h2>
+\t\t\t\t<ul>
+\t\t\t\t\t<li><b>Покупайте больше UNDEFINED</b></li>
+\t\t\t\t</ul>
+\t\t\t</li>
+\t\t</ul>
+
+HTML;
+
+        $html = html_from_group($group, 1);
+
+        $this->assertEquals(
+            $expected_html,
+            $html
+        );
+    }
 }
