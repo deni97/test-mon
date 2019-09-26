@@ -2,12 +2,12 @@
 
 function parse_csv(string $filename): array
 {
-    $rows   = array_map(function (string $input): array {
+    $rows = array_map(function (string $input): array {
         return str_getcsv($input, ";");
     }, file($filename));
 
     $header = array_shift($rows);
-    $csv    = array();
+    $csv = array();
 
     foreach ($rows as $row) {
         // В products.csv в заголовке на одну ; больше, чем в записях
@@ -60,9 +60,7 @@ function add_to_parent(&$parent, array $params): void
     $adding_to = $params[2];
     $checking = $params[3];
 
-    if (
-        array_key_exists('id', $parent) && ($parent['id'] === $node[$checking])
-    ) {
+    if (array_key_exists('id', $parent) && ($parent['id'] === $node[$checking])) {
         if (!isset($params[4])) {
             $parent[$adding_to][] = $node;
         } else {
@@ -153,15 +151,12 @@ function replace_placeholder(string $input, array $replacements): string
 
 function inherit_format(array &$tree, array $parent)
 {
-    if (
-        ($parent['description_format'] !== '') && $parent['inheritable']
-    ) {
+    if (($parent['description_format'] !== '') && $parent['inheritable']) {
         return $parent['description_format'];
     } else {
         $grandparent = find_parent($tree, $parent['parent']);
         if ($grandparent !== []) {
             $output = inherit_format($tree, $grandparent);
-
             if ($output) {
                 return $output;
             }
@@ -243,7 +238,6 @@ function html_from_group(array &$parent, int $count): string
     $html .= '</ul>';
     $html .= '
 ';
-
 
     return $html;
 }
