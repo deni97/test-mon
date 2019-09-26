@@ -141,10 +141,10 @@ class UtilsTest extends Testcase
 
     public function test_replace_placeholder()
     {
-        $expected_string = 'Купите тавегил по цене 1234';
+        $expected_string = 'Купите тавегил по цене 1234, с целью UNDEFINED';
 
         $output = replace_placeholder(
-            'Купите %наименование% по цене %цена%',
+            'Купите %наименование% по цене %цена%, с целью %цель%',
             [
                 'наименование' => 'тавегил',
                 'цена' => '1234',
