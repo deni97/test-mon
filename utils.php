@@ -214,6 +214,7 @@ function html_from_group(array &$parent, int $count): string
     $html .= '<ul>';
     $html .= '
 ';
+
     foreach ($parent['products'] as $product) {
         $html .= get_tabs($tab_count + 1);
         $html .= '<li><b>';
@@ -229,6 +230,7 @@ function html_from_group(array &$parent, int $count): string
         $html .= html_from_group($child, $count + 1);
         $html .= '
 ';
+
         $html .= get_tabs($tab_count + 1);
         $html .= '</li>';
         $html .= '
@@ -249,6 +251,7 @@ function html_from(array &$tree): string
     $html = '<ul>';
     $html .= '
 ';
+
     $html .= get_tabs(1);
     $html .= '<li>';
 
@@ -262,6 +265,7 @@ function html_from(array &$tree): string
     $html .= '</li>';
     $html .= '
 ';
+
     $html .= '</ul>';
 
     return $html;
