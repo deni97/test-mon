@@ -2,7 +2,7 @@
 
 function parse_csv(string $filename): array
 {
-    $rows   = array_map(function(string $input): array {
+    $rows   = array_map(function (string $input): array {
         return str_getcsv($input, ";");
     }, file($filename));
 
@@ -86,15 +86,6 @@ function node_from_group(array $group): array
     ];
 }
 
-function add_node(array &$tree, array $node): void
-{
-    if ($node['parent'] === '') {
-        $tree[] = $node;
-    }
-
-    add_to_parent($tree, [$node, 'children', 'children', 'parent']);
-}
-
 /**
  * В условии ясно не указан порядок групп в .csv. 
  * Предполагаю их упорядоченность.  
@@ -105,7 +96,13 @@ function construct_group_tree(array $groups): array
     $tree = [];
 
     foreach ($groups as $group) {
-        add_node($tree, node_from_group($group));
+        $node = node_from_group($group);
+
+        if ($node['parent'] === '') {
+            $tree[] = $node;
+        }
+
+        add_to_parent($tree, [$node, 'children', 'children', 'parent']);
     }
 
     return $tree;
