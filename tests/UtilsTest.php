@@ -166,7 +166,9 @@ class UtilsTest extends Testcase
 
         $expected_string = 'Купите %наименование% по цене %цена%';
 
-        $output = inherit_format($tree, $product);
+        $parent = find_parent($tree, $product['категория']);
+
+        $output = inherit_format($tree, $parent);
 
         $this->assertEquals(
             $expected_string,
@@ -175,9 +177,11 @@ class UtilsTest extends Testcase
 
         $product = $this->product_provider()[3];
 
+        $parent = find_parent($tree, $product['категория']);
+
         $expected_string = 'Покупайте больше %name%';
 
-        $output = inherit_format($tree, $product);
+        $output = inherit_format($tree, $parent);
 
         $this->assertEquals(
             $expected_string,

@@ -148,7 +148,7 @@ function replace_placeholder(string $input, array $replacements): string
     return $output;
 }
 
-function inherit_format_helper(array &$tree, array $parent)
+function inherit_format(array &$tree, array $parent)
 {
     if (
         ($parent['description_format'] !== '') && $parent['inheritable']
@@ -157,22 +157,13 @@ function inherit_format_helper(array &$tree, array $parent)
     } else {
         $grandparent = find_parent($tree, $parent['parent']);
         if ($grandparent !== []) {
-            $output = inherit_format_helper($tree, $grandparent);
+            $output = inherit_format($tree, $grandparent);
 
             if ($output) {
                 return $output;
             }
         }
     }
-}
-
-function inherit_format(array &$tree, array $product): string
-{
-    $parent = find_parent($tree, $product['категория']);
-    $output = '';
-
-    $output = inherit_format_helper($tree, $parent);
-    return $output;
 }
 
 function get_format(array &$tree, array $parent, array $product)
@@ -191,7 +182,7 @@ function add_product(array &$tree, array $product): void
     $format = get_format($tree, $parent, $product);
 
     if (!$format) {
-        $format = inherit_format($tree, $product);
+        $format = inherit_format($tree, $parent);
     }
 
     $product['formatted_text'] = replace_placeholder($format, $product);
