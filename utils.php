@@ -237,10 +237,13 @@ function html_from_group(array &$parent, int $count): string
 
     $html .= get_tabs($tab_count);
     $html .= '</ul>';
-    
+
     return $html;
 }
 
+/**
+ * Ньюлайн сделан так (не с помощью \n) для понятного отображения в терминале.
+ */
 function html_from(array &$tree): string
 {
     $html = '<ul>';
@@ -248,10 +251,7 @@ function html_from(array &$tree): string
 ';
     $html .= get_tabs(1);
     $html .= '<li>';
-    /*
-    $html .= '
-';
-    */
+
     foreach ($tree as $group) {
         $html .= html_from_group($group, 1);
     }
