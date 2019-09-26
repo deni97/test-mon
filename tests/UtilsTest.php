@@ -538,4 +538,25 @@ class UtilsTest extends Testcase
             ]
         ];
     }
+
+    public function test_is_sequential_array()
+    {
+        $sequential_array = [
+            1, 2, 3, 4, 'asdf', [1, 2, 3, 4]
+        ];
+
+        $associative_array = [
+            'asdf' => 1234,
+            '1234' => 'asdf',
+            'zxcv' => [1,2,3,4]
+        ];
+
+        $sequential_result = is_sequential_array($sequential_array);
+
+        $this->assertTrue($sequential_result);
+
+        $associative_result = is_sequential_array($associative_array);
+
+        $this->assertFalse($associative_result);
+    }
 }

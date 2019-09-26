@@ -26,9 +26,15 @@ function parse_csv(string $filename): array
 
 function is_sequential_array($arr)
 {
-    foreach (array_keys($arr) as $key)
-        if (is_int($key)) return true;
-    return false;
+    $result = true;
+
+    foreach (array_keys($arr) as $key) {
+        if (!is_int($key)) {
+            $result = false;
+        }
+    }
+
+    return $result;
 }
 
 /**
