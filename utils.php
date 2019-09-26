@@ -1,13 +1,11 @@
 <?php
 
-function semicolon_str_getcsv(string $input): array
-{
-    return str_getcsv($input, ";");
-}
-
 function parse_csv(string $filename): array
 {
-    $rows   = array_map('semicolon_str_getcsv', file($filename));
+    $rows   = array_map(function(string $input): array {
+        return str_getcsv($input, ";");
+    }, file($filename));
+
     $header = array_shift($rows);
     $csv    = array();
 
