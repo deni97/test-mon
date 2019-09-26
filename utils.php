@@ -26,12 +26,21 @@ function parse_csv(string $filename): array
     return $csv;
 }
 
-function is_sequential_array($arr) {
-	foreach(array_keys($arr) as $key)
-		if (is_int($key)) return true;
-	return false;
+function is_sequential_array($arr)
+{
+    foreach (array_keys($arr) as $key)
+        if (is_int($key)) return true;
+    return false;
 }
 
+/**
+ * array $params состоит из: 
+ *   [0] - добавляемый элемент
+ *   [1] - ветка родителя, по которой будет идти дальнейшая итерация
+ *   [2] - ветка родителя, к которой будет присоединён элемент
+ *   [3] - сравниваемая с айди родителя запись
+ *   [4] - добавляемая ветка элемента, при отсутствии добавляется весь элемент
+ */
 function add_to_parent(&$parent, array $params): void
 {
     if (!empty($parent) && is_sequential_array($parent)) {
@@ -182,7 +191,7 @@ function add_product(array &$tree, array $product): void
     $parent = find_parent($tree, $product['категория']);
 
     $format = get_format($tree, $parent, $product);
-    
+
     if (!$format) {
         $format = inherit_format($tree, $product);
     }
@@ -192,6 +201,9 @@ function add_product(array &$tree, array $product): void
     add_to_parent($tree, [$product, 'children', 'products', 'категория', 'formatted_text']);
 }
 
+/**
+ * Таб сделан так (не с помощью \t) для понятного отображения в терминале.
+ */
 function get_tabs(int $count): string
 {
     $tabs = '';
@@ -203,9 +215,9 @@ function get_tabs(int $count): string
     return $tabs;
 }
 
-$newline = '
-';
-
+/**
+ * Ньюлайн сделан так (не с помощью \n) для понятного отображения в терминале.
+ */
 function html_from_group(array &$parent, int $count): string
 {
     $tab_count = $count * 2;
@@ -218,7 +230,7 @@ function html_from_group(array &$parent, int $count): string
     $html .= "</h$count>";
     $html .= '
 ';
-    
+
     $html .= get_tabs($tab_count);
     $html .= '<ul>';
     $html .= '
@@ -249,7 +261,7 @@ function html_from_group(array &$parent, int $count): string
     $html .= '
 ';
 
-    
+
     return $html;
 }
 
@@ -257,11 +269,11 @@ function html_from(array &$tree): string
 {
     $html = '<ul>';
     $html .= '
-';  
+';
     $html .= get_tabs(1);
     $html .= '<li>';
     $html .= '
-';  
+';
 
     foreach ($tree as $group) {
         $html .= html_from_group($group, 1);
