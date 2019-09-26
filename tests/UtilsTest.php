@@ -589,6 +589,7 @@ class UtilsTest extends Testcase
         $group['children'][0]['products'][] = replace_placeholder($group['description_format'], $product);
 
         $expected_html = <<<HTML
+
 \t\t<h1>Группа 1.2</h1>
 \t\t<ul>
 \t\t\t<li>
@@ -598,7 +599,6 @@ class UtilsTest extends Testcase
 \t\t\t\t</ul>
 \t\t\t</li>
 \t\t</ul>
-
 HTML;
 
         $html = html_from_group($group, 1);

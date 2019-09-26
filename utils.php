@@ -200,7 +200,8 @@ function html_from_group(array &$parent, int $count): string
 {
     $tab_count = $count * 2;
 
-    $html = '';
+    $html = '
+';
 
     $html .= get_tabs($tab_count);
     $html .= "<h$count>";
@@ -225,9 +226,9 @@ function html_from_group(array &$parent, int $count): string
     foreach ($parent['children'] as $child) {
         $html .= get_tabs($tab_count + 1);
         $html .= '<li>';
+        $html .= html_from_group($child, $count + 1);
         $html .= '
 ';
-        $html .= html_from_group($child, $count + 1);
         $html .= get_tabs($tab_count + 1);
         $html .= '</li>';
         $html .= '
@@ -236,9 +237,7 @@ function html_from_group(array &$parent, int $count): string
 
     $html .= get_tabs($tab_count);
     $html .= '</ul>';
-    $html .= '
-';
-
+    
     return $html;
 }
 
@@ -249,9 +248,10 @@ function html_from(array &$tree): string
 ';
     $html .= get_tabs(1);
     $html .= '<li>';
+    /*
     $html .= '
 ';
-
+    */
     foreach ($tree as $group) {
         $html .= html_from_group($group, 1);
     }
