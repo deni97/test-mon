@@ -179,62 +179,50 @@ function add_product(array &$tree, array $product): void
     add_to_parent($tree, [$product, 'children', 'products', 'категория', 'formatted_text']);
 }
 
-/**
- * Таб сделан так (не с помощью \t) для понятного отображения в терминале.
- */
 function get_tabs(int $count): string
 {
-    $tabs = '';
+    $tabs = "";
 
     for ($i = 0; $i < $count; ++$i) {
-        $tabs .= '	';
+        $tabs .= "\t";
     }
 
     return $tabs;
 }
 
-/**
- * Ньюлайн сделан так (не с помощью \n) для понятного отображения в терминале.
- */
 function html_from_group(array &$parent, int $count): string
 {
     $tab_count = $count * 2;
 
-    $html = '
-';
+    $html = "\r\n";
 
     $html .= get_tabs($tab_count);
     $html .= "<h$count>";
     $html .= $parent['name'];
     $html .= "</h$count>";
-    $html .= '
-';
+    $html .= "\r\n";
 
     $html .= get_tabs($tab_count);
     $html .= '<ul>';
-    $html .= '
-';
+    $html .= "\r\n";
 
     foreach ($parent['products'] as $product) {
         $html .= get_tabs($tab_count + 1);
         $html .= '<li><b>';
         $html .= $product;
         $html .= '</b></li>';
-        $html .= '
-';
+        $html .= "\r\n";
     }
 
     foreach ($parent['children'] as $child) {
         $html .= get_tabs($tab_count + 1);
         $html .= '<li>';
         $html .= html_from_group($child, $count + 1);
-        $html .= '
-';
+        $html .= "\r\n";
 
         $html .= get_tabs($tab_count + 1);
         $html .= '</li>';
-        $html .= '
-';
+        $html .= "\r\n";
     }
 
     $html .= get_tabs($tab_count);
@@ -243,14 +231,10 @@ function html_from_group(array &$parent, int $count): string
     return $html;
 }
 
-/**
- * Ньюлайн сделан так (не с помощью \n) для понятного отображения в терминале.
- */
 function html_from(array &$tree): string
 {
     $html = '<ul>';
-    $html .= '
-';
+    $html .= "\r\n";
 
     $html .= get_tabs(1);
     $html .= '<li>';
@@ -259,12 +243,10 @@ function html_from(array &$tree): string
         $html .= html_from_group($group, 1);
     }
 
-    $html .= '
-';
+    $html .= "\r\n";
     $html .= get_tabs(1);
     $html .= '</li>';
-    $html .= '
-';
+    $html .= "\r\n";
 
     $html .= '</ul>';
 
